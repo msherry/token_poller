@@ -8,12 +8,15 @@ now=$(date +%s)
 
 IFS="
 "
+longest_key_len=0
 for redis_key in $(redis-cli keys token_buckets:*)
 do
     key="${redis_key#token_buckets:}"
     tokens["$key"]=$(redis-cli hgetall "$redis_key" | head -2 | tail -1)
     fill_rate["$key"]=$(redis-cli hgetall "$redis_key" | head -4 | tail -1)
-    updated_at["$key"]=$(date -d "$(redis-cli hgetall "'"'$redis_key'"'" | head -8 | tail -1 | sed s/T/' '/)" +%s)
+    updated_at["$key"]=$(date -d "$(redis-cli hgetall $redis_key | head -8 | tail -1 | sed s/T/' '/)" +%s)
+
+    [[ ${#key} -gt $longest_key_len ]] && longest_key_len=${#key}
 done
 
 for key in "${!tokens[@]}"
@@ -25,11 +28,23 @@ do
         country=$(geoiplookup $key | head -1| cut -d" " -f 5-)
     fi
 
-    # #
-    tabs="\t\t"
-    [[ ${#key} -gt 16 ]] && tabs="\t"
+    # Find required spacing
+    total_spacing=`expr \( 7 + $longest_key_len \) / 8 \* 8`
+    num_tabs=`expr 1 + \( $total_spacing - ${#key} - 1 \) / 8` || true # wtf
+    total_num_tabs=$num_tabs
+    tabs=
+    while [ $num_tabs -gt 0 ]
+    do
+        tabs="\t$tabs"
+        num_tabs=`expr $num_tabs - 1` || true # wtf
+    done
+
+    # echo $total_spacing
+    # echo $longest_key_len
+    # echo ${#key}
+    # echo $total_num_tabs
     echo -e "${key}${tabs}${now_toks}\t$country"
 done
 
-
+# watch -n 10 "./tokens.sh|sort -nr -k2 -t $'\t'"
 # 173.245.67.148
