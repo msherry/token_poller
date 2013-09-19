@@ -18,7 +18,6 @@ done
 
 for key in "${!tokens[@]}"
 do
-    echo $key
     now_toks=$(echo "${tokens[$key]} + ($now-${updated_at[$key]}) * ${fill_rate[$key]}" | bc -l)
     country=
     if [[ $key =~ [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]
@@ -27,7 +26,9 @@ do
     fi
 
     # #
-    echo -e "$key\t$now_toks\t$country"
+    tabs="\t\t"
+    [[ ${#key} -gt 16 ]] && tabs="\t"
+    echo -e "${key}${tabs}${now_toks}\t$country"
 done
 
 
