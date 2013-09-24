@@ -19,6 +19,8 @@ do
     [[ ${#key} -gt $longest_key_len ]] && longest_key_len=${#key}
 done
 
+total_spacing=`expr \( 8 + $longest_key_len \) / 8 \* 8`
+
 for key in "${!tokens[@]}"
 do
     now_toks=$(echo "${tokens[$key]} + ($now-${updated_at[$key]}) * ${fill_rate[$key]}" | bc -l)
@@ -29,7 +31,6 @@ do
     fi
 
     # Find required spacing
-    total_spacing=`expr \( 7 + $longest_key_len \) / 8 \* 8`
     num_tabs=`expr 1 + \( $total_spacing - ${#key} - 1 \) / 8` || true # wtf
     total_num_tabs=$num_tabs
     tabs=
