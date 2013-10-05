@@ -38,7 +38,8 @@ for key, bucket in buckets.iteritems():
 
     if re.match(r'[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+',
                 key):
-        country = geoip.record_by_addr(key)['country_name']
+        record = geoip.record_by_addr(key) or {}
+        country = record.get('country_name', 'UNKNOWN')
     bucket['country'] = country
 
 for key, bucket in sorted(buckets.iteritems(),
