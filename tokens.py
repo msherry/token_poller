@@ -11,10 +11,6 @@ TIME_FMT = '%Y-%m-%dT%H:%M:%S.%f'
 r = redis.StrictRedis(host='localhost', port=6379, db=0)
 geoip = pygeoip.GeoIP('/usr/share/GeoIP/GeoLiteCity.dat')
 
-buckets = {}
-
-longest_key_len = 0
-
 
 def main(namespace):
     buckets = {}
@@ -33,6 +29,9 @@ def main(namespace):
 
     now = datetime.utcnow()
     for key, bucket in buckets.iteritems():
+        if not bucket:
+            # Might have expired while we were polling
+            buckets.pop(key)
         updated_at = datetime.strptime(bucket['updated_at'],
                                        TIME_FMT)
 
